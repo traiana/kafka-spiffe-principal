@@ -6,7 +6,7 @@
 
     <groupId>io.okro.kafka</groupId>
     <artifactId>kafka-spiffe-principal</artifactId>
-    <version>1.0.0</version>
+    <version>2.0.0</version>
     <build>
         <plugins>
             <plugin>
@@ -23,8 +23,8 @@
     <dependencies>
         <dependency>
             <groupId>org.apache.kafka</groupId>
-            <artifactId>kafka_2.11</artifactId>
-            <version>1.1.1</version>
+            <artifactId>kafka_2.13</artifactId>
+            <version>2.4.1</version>
         </dependency>
         <dependency>
             <groupId>com.google.code.findbugs</groupId>
