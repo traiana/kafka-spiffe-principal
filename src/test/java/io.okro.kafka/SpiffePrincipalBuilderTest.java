@@ -2,6 +2,7 @@ package io.okro.kafka;
 
 import org.apache.kafka.common.security.auth.KafkaPrincipal;
 import org.apache.kafka.common.security.auth.PlaintextAuthenticationContext;
+import org.apache.kafka.common.security.auth.SecurityProtocol;
 import org.apache.kafka.common.security.auth.SslAuthenticationContext;
 import org.junit.Test;
 
@@ -31,7 +32,7 @@ public class SpiffePrincipalBuilderTest {
         // mock ssl session
         SSLSession session = mock(SSLSession.class);
         when(session.getPeerCertificates()).thenReturn(new Certificate[]{cert});
-        return new SslAuthenticationContext(session, InetAddress.getLocalHost());
+        return new SslAuthenticationContext(session, InetAddress.getLocalHost(), SecurityProtocol.SSL.name());
     }
 
     /**
@@ -79,7 +80,7 @@ public class SpiffePrincipalBuilderTest {
      */
     @Test
     public void TestNoSSLContext() throws java.net.UnknownHostException {
-        PlaintextAuthenticationContext context = new PlaintextAuthenticationContext(InetAddress.getLocalHost());
+        PlaintextAuthenticationContext context = new PlaintextAuthenticationContext(InetAddress.getLocalHost(), SecurityProtocol.SSL.name());
         KafkaPrincipal principal = new SpiffePrincipalBuilder().build(context);
 
         assertEquals(KafkaPrincipal.ANONYMOUS, principal);
