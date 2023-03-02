@@ -85,4 +85,40 @@ public class SpiffePrincipalBuilderTest {
 
         assertEquals(KafkaPrincipal.ANONYMOUS, principal);
     }
+
+    @Test
+    public void TestSerdeWithAnonymous() throws UnknownHostException {
+        PlaintextAuthenticationContext context = new PlaintextAuthenticationContext(InetAddress.getLocalHost(), SecurityProtocol.SSL.name());
+        KafkaPrincipal principal = new SpiffePrincipalBuilder().build(context);
+
+        SpiffePrincipalBuilder spiffePrincipalBuilder = new SpiffePrincipalBuilder();
+        byte[] bytes = spiffePrincipalBuilder.serialize(principal);
+        KafkaPrincipal recoveredPrincipal = spiffePrincipalBuilder.deserialize(bytes);
+
+        assertEquals(principal, recoveredPrincipal);
+    }
+
+    @Test
+    public void TestSerdeWithSpiffe() throws CertificateException, UnknownHostException, SSLPeerUnverifiedException {
+        SslAuthenticationContext context = mockedSslContext("spiffe-cert.pem");
+        KafkaPrincipal principal = new SpiffePrincipalBuilder().build(context);
+
+        SpiffePrincipalBuilder spiffePrincipalBuilder = new SpiffePrincipalBuilder();
+        byte[] bytes = spiffePrincipalBuilder.serialize(principal);
+        KafkaPrincipal recoveredPrincipal = spiffePrincipalBuilder.deserialize(bytes);
+
+        assertEquals(principal, recoveredPrincipal);
+    }
+
+    @Test
+    public void TestSerdeWithUser() throws CertificateException, UnknownHostException, SSLPeerUnverifiedException {
+        SslAuthenticationContext context = mockedSslContext("subject-only-cert.pem");
+        KafkaPrincipal principal = new SpiffePrincipalBuilder().build(context);
+
+        SpiffePrincipalBuilder spiffePrincipalBuilder = new SpiffePrincipalBuilder();
+        byte[] bytes = spiffePrincipalBuilder.serialize(principal);
+        KafkaPrincipal recoveredPrincipal = spiffePrincipalBuilder.deserialize(bytes);
+
+        assertEquals(principal, recoveredPrincipal);
+    }
 }

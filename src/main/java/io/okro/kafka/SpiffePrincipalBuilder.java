@@ -1,8 +1,13 @@
 package io.okro.kafka;
 
+import org.apache.kafka.common.errors.SerializationException;
+import org.apache.kafka.common.message.DefaultPrincipalData;
+import org.apache.kafka.common.protocol.ByteBufferAccessor;
+import org.apache.kafka.common.protocol.MessageUtil;
 import org.apache.kafka.common.security.auth.AuthenticationContext;
 import org.apache.kafka.common.security.auth.KafkaPrincipal;
 import org.apache.kafka.common.security.auth.KafkaPrincipalBuilder;
+import org.apache.kafka.common.security.auth.KafkaPrincipalSerde;
 import org.apache.kafka.common.security.auth.SslAuthenticationContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,13 +15,14 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.Nullable;
 import javax.net.ssl.SSLPeerUnverifiedException;
 import javax.net.ssl.SSLSession;
+import java.nio.ByteBuffer;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.List;
 
-public class SpiffePrincipalBuilder implements KafkaPrincipalBuilder {
+public class SpiffePrincipalBuilder implements KafkaPrincipalBuilder, KafkaPrincipalSerde {
     private static final Logger LOG = LoggerFactory.getLogger(SpiffePrincipalBuilder.class);
 
     private static final String SPIFFE_TYPE = "SPIFFE";
@@ -75,5 +81,26 @@ public class SpiffePrincipalBuilder implements KafkaPrincipalBuilder {
             LOG.warn("failed to parse SAN", e);
             return null;
         }
+    }
+
+    @Override
+    public byte[] serialize(KafkaPrincipal principal) throws SerializationException {
+        DefaultPrincipalData data = new DefaultPrincipalData()
+                .setType(principal.getPrincipalType())
+                .setName(principal.getName())
+                .setTokenAuthenticated(principal.tokenAuthenticated());
+        return MessageUtil.toVersionPrefixedBytes(DefaultPrincipalData.HIGHEST_SUPPORTED_VERSION, data);
+    }
+
+    @Override
+    public KafkaPrincipal deserialize(byte[] bytes) throws SerializationException {
+        ByteBuffer buffer = ByteBuffer.wrap(bytes);
+        short version = buffer.getShort();
+        if (version < DefaultPrincipalData.LOWEST_SUPPORTED_VERSION || version > DefaultPrincipalData.HIGHEST_SUPPORTED_VERSION) {
+            throw new SerializationException("Invalid principal data version " + version);
+        }
+
+        DefaultPrincipalData data = new DefaultPrincipalData(new ByteBufferAccessor(buffer), version);
+        return new KafkaPrincipal(data.type(), data.name(), data.tokenAuthenticated());
     }
 }
