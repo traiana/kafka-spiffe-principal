@@ -1,4 +1,4 @@
-package io.okro.kafka;
+package com.wise.kafka;
 
 import org.apache.kafka.common.security.auth.KafkaPrincipal;
 import org.apache.kafka.common.security.auth.PlaintextAuthenticationContext;
