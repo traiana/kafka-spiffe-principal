@@ -1,6 +1,8 @@
 plugins {
     id 'java-library'
     id 'maven-publish'
+    id 'com.wise.gradlewise.gha' version '+'
+    id 'com.wise.gradlewise.cerberus' version '+'
 }
 
 repositories {
@@ -29,4 +31,8 @@ publishing {
             from(components.java)
         }
     }
+}
+
+workflow {
+    configLibrary {}
 }
