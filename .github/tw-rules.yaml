@@ -1,0 +1,12 @@
+runChecks: true
+actions:
+  branch-protection-settings:
+    branches:
+      - name: master
+        dismissStaleReviews: true
+        requireBranchUpToDate: true
+        checks:
+          - name: Build And Test
+            type: tests
+  sync-codeowners:
+    extraWriters: ["product-engineering", "platform", "governance"]
